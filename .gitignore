@@ -1,4 +1,5 @@
 venv
+envs
 __pycache__
 MNIST
 .idea

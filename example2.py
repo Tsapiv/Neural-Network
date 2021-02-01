@@ -120,43 +120,6 @@ class NeuralNetwork:
             a = self.layers[l].forward(a)
         return a
 
-np.random.seed(50)
-
-class MnistDataloader:
-    def __init__(self, training_images_filepath, training_labels_filepath,
-                 test_images_filepath, test_labels_filepath):
-        self.training_images_filepath = training_images_filepath
-        self.training_labels_filepath = training_labels_filepath
-        self.test_images_filepath = test_images_filepath
-        self.test_labels_filepath = test_labels_filepath
-
-    def read_images_labels(self, images_filepath, labels_filepath):
-        labels = []
-        with open(labels_filepath, 'rb') as file:
-            magic, size = struct.unpack(">II", file.read(8))
-            if magic != 2049:
-                raise ValueError('Magic number mismatch, expected 2049, got {}'.format(magic))
-            labels = array("B", file.read())
-
-        with open(images_filepath, 'rb') as file:
-            magic, size, rows, cols = struct.unpack(">IIII", file.read(16))
-            if magic != 2051:
-                raise ValueError('Magic number mismatch, expected 2051, got {}'.format(magic))
-            image_data = array("B", file.read())
-        images = []
-        for i in range(size):
-            images.append([0] * rows * cols)
-        for i in range(size):
-            img = np.array(image_data[i * rows * cols:(i + 1) * rows * cols])
-            # img = img.reshape(28, 28)
-            images[i][:] = img
-
-        return images, labels
-
-    def load_data(self):
-        x_train, y_train = self.read_images_labels(self.training_images_filepath, self.training_labels_filepath)
-        x_test, y_test = self.read_images_labels(self.test_images_filepath, self.test_labels_filepath)
-        return (x_train, y_train), (x_test, y_test)
 
 if __name__ == '__main__':
     # reader = MnistDataloader("train_images", "train_labels", "test_images", "test_labels")
@@ -179,6 +142,47 @@ if __name__ == '__main__':
     #
     # print("Done!")
     # print(total, "/", len(y_test))
+
+    data = load_data()[0:2]
+    x_train, y_train = data[0]
+    x_test, y_test = data[1]
+
+    # print("Loaded")
+    # config = [784, 100, 10]
+    # nn = NeuralNetwork(config, "sigmoid")
+    # x_train = np.array(x_train) / 255
+    # x_test = np.array(x_test) / 255
+    # temp = np.zeros((len(y_train), 10))
+    # temp[np.arange(temp.shape[0]), y_train] = 1
+    # y_train = temp
+    # print("Start")
+    # a = time()
+    # nn.train(x_train, y_train, rate=3.0, epochs=30)
+    # prediction = nn.feedforward(x_test)
+    # total = np.sum(prediction.argmax(1) == np.array(y_test))
+    #
+    # print("Trained", time() - a)
+    #
+    #
+    # print("Done! Total:", total)
+
+    print("Loaded")
+    config = [784, 100, 10]
+    nn = NeuralNetwork(config, "sigmoid")
+    # x_train = np.array(x_train) / 255
+    # x_test = np.array(x_test) / 255
+    temp = np.zeros((len(y_train), 10))
+    temp[np.arange(temp.shape[0]), y_train] = 1
+    y_train = temp
+    print("Start")
+    a = time()
+    nn.train(x_train, y_train, rate=0.1, epochs=10, size=1)
+    prediction = nn.feedforward(x_test).argmax(1)
+    total = np.sum(prediction == np.array(y_test))
+
+    print("Trained", time() - a)
+
+    print("Done! Total:", total)
 
     nn = NeuralNetwork([2, 2, 1], activation="sigmoid")
     prediction = None
